@@ -90,7 +90,7 @@ def init_latent(latent, model, height, width, generator, batch_size):
             (1, model.unet.in_channels, height // 8, width // 8),
             generator=generator,
         )
-    latents = latent.expand(batch_size,  model.unet.in_channels, height // 8, width // 8).to(model.device)
+    latents = latent.expand(batch_size,  model.unet.in_channels, height // 8, width // 8)
     return latent, latents
 
 
@@ -109,10 +109,10 @@ def text2image_ldm(
     batch_size = len(prompt)
     
     uncond_input = model.tokenizer([""] * batch_size, padding="max_length", max_length=77, return_tensors="pt")
-    uncond_embeddings = model.bert(uncond_input.input_ids.to(model.device))[0]
+    uncond_embeddings = model.bert(uncond_input.input_ids)[0]
     
     text_input = model.tokenizer(prompt, padding="max_length", max_length=77, return_tensors="pt")
-    text_embeddings = model.bert(text_input.input_ids.to(model.device))[0]
+    text_embeddings = model.bert(text_input.input_ids)[0]
     latent, latents = init_latent(latent, model, height, width, generator, batch_size)
     context = torch.cat([uncond_embeddings, text_embeddings])
     
@@ -147,12 +147,12 @@ def text2image_ldm_stable(
         truncation=True,
         return_tensors="pt",
     )
-    text_embeddings = model.text_encoder(text_input.input_ids.to(model.device))[0]
+    text_embeddings = model.text_encoder(text_input.input_ids)[0]
     max_length = text_input.input_ids.shape[-1]
     uncond_input = model.tokenizer(
         [""] * batch_size, padding="max_length", max_length=max_length, return_tensors="pt"
     )
-    uncond_embeddings = model.text_encoder(uncond_input.input_ids.to(model.device))[0]
+    uncond_embeddings = model.text_encoder(uncond_input.input_ids)[0]
     
     context = [uncond_embeddings, text_embeddings]
     if not low_resource:
